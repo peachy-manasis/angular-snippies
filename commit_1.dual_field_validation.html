@@ -1,0 +1,220 @@
+<!--
+    - if you're gonna copy this code, please credit to me
+    - peachyjoycemanasis
+    - check out my github at https://github.com/peachy-manasis
+    - happy coding!!!
+-->
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Angular Material requires Angular.js Libraries -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+
+    <!-- Angular Material Library -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+
+    <!-- Angular Material style sheet -->
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+
+    <!-- Your application bootstrap  -->
+    <script type="text/javascript">
+        /**
+         * You must include the dependency on 'ngMaterial'
+         */
+
+        angular
+                .module('demo', ['ngMaterial','ngMessages'])
+                .controller('primaryController', primaryController)
+                .directive('productValid', function()
+                {
+                    return {
+                        restrict: 'EA',
+                        require: "ngModel",
+                        link: function(scope, elem, attr, ngModel)
+                        {
+                            // if either field is empty, return
+                            if (!ngModel) return;
+
+                            var validateBoth = function (val) {
+                                var form = scope[attr.form];
+                                var other_field = form[attr.otherField];
+                                var return_value = false;
+
+                                // determine which field you are currently on
+                                if (other_field.$name == "model")    // currently on product brand field
+                                {
+                                    return_value = productValid(val, other_field.$modelValue);
+                                    other_field.$setValidity('productValid', return_value);
+                                }
+                                else if(other_field.$name == "brand") { // currently on product model field
+                                    return_value = productValid(other_field.$modelValue, val);
+                                    ngModel.$setValidity('productValid', return_value);
+                                }
+                                return val;
+                            };
+                            ngModel.$parsers.unshift(validateBoth);
+                        }
+                    }
+                });
+
+        function primaryController($scope)
+        {
+            $scope.product = {
+                brand: '',
+                model: ''
+            };
+
+            $scope.form_status = "clear";
+
+            $scope.submitForm = function()
+            {
+                $scope.form_status = "Form submitted!";
+            };
+
+            $scope.clearForm = function(form)
+            {
+                if(form)
+                {
+                    form.$setPristine();
+                    form.$setUntouched();
+                }
+                $scope.product = {};
+                $scope.form_status = "clear";
+            };
+        }
+
+        /**
+         * This is the validation function
+         * where you will place your validation logic
+         *
+         * @param brand
+         * @param model
+         * @returns {boolean}
+         */
+        function productValid(brand, model)
+        {
+            var samsung_models = ["s3", "s4", "s5"];
+            var oppo_models = ["a1", "selfielux", "f1s"];
+            var cherry_mobile_models = ["flare", "cubixcube", "talkie"];
+            if(brand == "samsung")
+            {
+                if(samsung_models.indexOf(model) !== -1)
+                {
+                    return true;
+                }
+            }
+            else if(brand == "oppo")
+            {
+                if(oppo_models.indexOf(model) !== -1)
+                {
+                    return true;
+                }
+            }
+            else if(brand == "cherrymobile")
+            {
+                if(cherry_mobile_models.indexOf(model) !== -1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    </script>
+
+    <!-- Your css styles -->
+    <style type="text/css">
+        .title {
+            font-size: 34px;
+            font-weight: 400;
+            line-height: 40px;
+        }
+
+        p {
+            font-size: 15px;
+            font-weight: 400;
+            letter-spacing: 0.010em;
+            line-height: 1.6em;
+            margin: 0.8em 0 1.6em;
+        }
+
+        .description {
+            text-align: left;
+        }
+
+        .content-container {
+            width: 550px;
+        }
+    </style>
+
+</head>
+<body>
+<!--Your HTML content here-->
+
+<div id="main_container" layout="column" layout-align="center center" ng-app="demo" ng-controller="primaryController">
+    <div id="title_container" class="text-left" layout="column" layout-align="start start">
+        <h2 class="title">Commit #1</h2>
+    </div>
+    <div id="content_container" layout="column" layout-align="start start" class="content-container">
+        <div id="form_container" class="content-container">
+            <form name="speachyForm" id="speachyForm">
+                <md-input-container class="md-block">
+                    <label>Phone Brand</label>
+                    <md-select name="brand" ng-model="product.brand" product-valid form="speachyForm" other-field="model" required>
+                        <md-option value="samsung">Samsung</md-option>
+                        <md-option value="oppo">Oppo</md-option>
+                        <md-option value="cherrymobile">Cherry Mobile</md-option>
+                    </md-select>
+                    <div ng-messages="speachyForm.brand.$error" role="alert">
+                        <div ng-message="required">
+                            <span>This field is required!</span>
+                        </div>
+                    </div>
+                </md-input-container>
+                <md-input-container class="md-block">
+                    <label>Model</label>
+                    <input type="text" name="model" ng-model="product.model" product-valid form="speachyForm" other-field="brand" required>
+                    <div ng-messages="speachyForm.model.$error" role="alert">
+                        <div ng-message="productValid">
+                            <span>Product is invalid!</span>
+                        </div>
+                        <div ng-message="required">
+                            <span>This field is required!</span>
+                        </div>
+                    </div>
+                </md-input-container>
+                <md-button type="submit" ng-disabled="speachyForm.$invalid || speachyForm.$pristine" class="md-raised md-accent" ng-click="submitForm()">Submit</md-button>
+                <md-button class="md-warn" ng-click="clearForm(speachyForm)">Clear</md-button>
+            </form>
+        </div>
+        <div id="data_dump">
+            Form status: {{ form_status }}
+        </div>
+        <div id="description_container" class="description" flex>
+            <h5>Description: </h5>
+            <p>This validates the values of both fields, wherein the validity of one depends on the value of the other. If you select a phone brand, only specific models are allowed. For reference, here are the valid values for the fields: <br/><br/>
+                Brand: Samsung <br/>
+                Models: s3, s4, s5 <br/><br/>
+                Brand: Oppo<br/>
+                Models: a1, selfielux, f1s <br/><br/>
+                Brand: Cherry Mobile<br/>
+                Models: flare, cubixcube, talkie <br/><br/>
+                This can be also used for other field type validations such as dates and other strict field validations.
+            </p>
+        </div>
+    </div>
+    <div id="footer_container"></div>
+</div>
+
+</body>
+</html>
+
+<!--
+Copyright 2016 Google Inc. All Rights Reserved.
+Use of this source code is governed by an MIT-style license that can be in found in the LICENSE file at http://material.angularjs.org/license.
+-->
